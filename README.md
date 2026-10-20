@@ -1,18 +1,25 @@
 # SNS_recommend
-  
-  SNS 좋아요 정보를 통해 CF를 사용하여 비슷한 사용자의 좋아요 데이터를 기반으로 추천하는 시스템
-  
-# 특징
-  1. CF알고리즘을 사용하며 좋아요 기반으로도 가능하지만 시청 시간, 평점 등의 점수가 다양하게 평가되는 요소를 사용하면 더욱 높은 정확도를 얻을 수 있음
-  2. 좋아요 로그를 기반으로 데이터 가공을 통해 사용자에게 추천할 데이터 선별
-  
-  
-# 장점
-  1. 통계적 알고리즘을 활용하여 유용한 추천 시스템
-  2. GPU를 통한 계산을 사용하여 많은 양의 데이터 소화 가능
 
-# 단점
- 1. GPU를 사용하여 이용 cost가 높다.
-  
-# 마치며
-  소규모 프로젝트 오랜만에 해보니 재미가 있었다.
+Post recommendation for a social network service using **collaborative filtering on implicit feedback (likes)**, implemented in PyTorch on GPU. Personal project, 2021.
+
+## Approach
+
+- **Input:** like logs (`account`, `post`, timestamp) → binary user × post interaction matrix (`preprocess.ipynb`)
+- **Model:** matrix factorization for implicit feedback — likes are treated as preference with confidence weighting, and user/post latent factors are optimized with L2 regularization (`CF.ipynb`; latent dim 200, λ = 40)
+- **Output:** predicted preference score for every (user, post) pair → top-N unseen posts per user (`application.ipynb`)
+
+Running the factorization on GPU lets the full interaction matrix be processed in mini-batches.
+
+## Files
+
+| File | Purpose |
+|---|---|
+| `preprocess.ipynb` | Build the interaction matrix from `likes.csv` → `like_p.csv` |
+| `CF.ipynb` | Train the factorization model, export `predict.csv` |
+| `application.ipynb` | Pick recommendations per user from predicted scores |
+| `test.ipynb` | Sanity checks |
+| `likes.csv` | Anonymized like log (opaque IDs only) |
+
+## Notes / limitations
+- Likes are a weak signal; richer implicit feedback (watch time, ratings) would improve accuracy.
+- GPU is required as written (`torch.device("cuda")`).
